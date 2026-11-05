@@ -22,7 +22,7 @@ export const dogSchema = z.object({
   name: cleanText(120, 1),
   breedId: z.string().uuid(),
   description: cleanText(3000),
-  priceCents: z.number().int().min(0).max(100_000_000),
+  priceCents: z.number().int().min(55_000).max(110_000),
   imageUrl,
   status: z.enum(["draft", "published"])
 });
@@ -32,10 +32,12 @@ export const inquirySchema = z.object({
   email: z.string().trim().email().max(254),
   phone: z.string().trim().max(40).optional().transform((value) => value || null),
   message: cleanText(3000, 10),
-  dogId: z.string().uuid().optional().nullable()
+  dogId: z.string().uuid().optional().nullable(),
+  dogIds: z.array(z.string().uuid()).max(3).optional()
+    .refine((value) => !value || new Set(value).size === value.length, "A dog can only be added once.")
 });
 
-export const inquiryUpdateSchema = inquirySchema.partial()
+export const inquiryUpdateSchema = inquirySchema.omit({ dogIds: true }).partial()
   .extend({ status: z.enum(["new", "in_progress", "closed"]).optional() })
   .refine((value) => Object.keys(value).length > 0, "Provide at least one inquiry field to update.");
 

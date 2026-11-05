@@ -2,9 +2,17 @@
 
 import { FormEvent, useState } from "react";
 
-type InquiryDog = { id: string; name: string; breedName: string };
+type InquiryDog = { id: string; name: string; breedName: string; priceCents: number };
 
-export function InquiryForm({ dogs, dogId }: { dogs: InquiryDog[]; dogId?: string }) {
+export function InquiryForm({
+  dogs,
+  selectedDogIds,
+  onRemoveDog
+}: {
+  dogs: InquiryDog[];
+  selectedDogIds: string[];
+  onRemoveDog: (id: string) => void;
+}) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -24,12 +32,13 @@ export function InquiryForm({ dogs, dogId }: { dogs: InquiryDog[]; dogId?: strin
           email: form.get("email"),
           phone: form.get("phone"),
           message: form.get("message"),
-          dogId: form.get("dogId") || dogId || undefined
+          dogIds: selectedDogIds
         })
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "Your message couldn't be sent.");
       formElement.reset();
+      selectedDogIds.forEach(onRemoveDog);
       setError(false);
       setMessage("Thanks, your message has been sent.");
     } catch (reason) {
@@ -45,11 +54,14 @@ export function InquiryForm({ dogs, dogId }: { dogs: InquiryDog[]; dogId?: strin
       <div className="field"><label htmlFor="inquiry-name">Your name</label><input id="inquiry-name" name="name" autoComplete="name" required maxLength={120} /></div>
       <div className="field"><label htmlFor="inquiry-email">Email address</label><input id="inquiry-email" name="email" type="email" autoComplete="email" required maxLength={254} /></div>
     </div>
-    {dogs.length > 0 && <div className="field"><label htmlFor="inquiry-dog">I’m interested in</label><select id="inquiry-dog" name="dogId" defaultValue={dogId ?? ""}><option value="">A general question</option>{dogs.map((dog) => <option key={dog.id} value={dog.id}>{dog.name} — {dog.breedName}</option>)}</select></div>}
+    {selectedDogIds.length > 0 && <div className="field"><span className="field-label">I’m asking about</span><ul className="selected-dogs">{dogs.filter((dog) => selectedDogIds.includes(dog.id)).map((dog) => <li key={dog.id}>
+      <span>{dog.name} · {dog.breedName} <strong>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(dog.priceCents / 100)}</strong></span>
+      <button className="remove-dog" type="button" onClick={() => onRemoveDog(dog.id)} aria-label={`Remove ${dog.name} from your enquiry`}>Remove</button>
+    </li>)}</ul></div>}
     <div className="field"><label htmlFor="inquiry-phone">Phone (optional)</label><input id="inquiry-phone" name="phone" type="tel" autoComplete="tel" maxLength={40} /></div>
-    <div className="field"><label htmlFor="inquiry-message">Your message</label><textarea id="inquiry-message" name="message" required minLength={10} maxLength={3000} placeholder="What would you like to know?" /></div>
+    <div className="field"><label htmlFor="inquiry-message">Your message</label><textarea id="inquiry-message" name="message" required minLength={10} maxLength={selectedDogIds.length > 0 ? 2200 : 3000} placeholder="What would you like to know?" /></div>
     <button className="button" type="submit" disabled={busy}>{busy ? "Sending…" : "Send message"} <span aria-hidden>→</span></button>
     <p className={`status-message${error ? " error" : ""}`} aria-live="polite">{message}</p>
-    <p className="muted-note">This form is for messages only. It doesn’t reserve a dog.</p>
+    <p className="muted-note">This form is an enquiry only. It doesn’t take payment or reserve a dog.</p>
   </form>;
 }

@@ -25,7 +25,10 @@ test("dog input rejects unsupported publication states and invalid prices", () =
     priceCents: 85000, imageUrl: "/images/chihuahua-listing.jpg", status: "draft"
   };
   assert.equal(dogSchema.safeParse(base).success, true);
-  assert.equal(dogSchema.safeParse({ ...base, priceCents: -1 }).success, false);
+  assert.equal(dogSchema.safeParse({ ...base, priceCents: 55000 }).success, true);
+  assert.equal(dogSchema.safeParse({ ...base, priceCents: 110000 }).success, true);
+  assert.equal(dogSchema.safeParse({ ...base, priceCents: 54999 }).success, false);
+  assert.equal(dogSchema.safeParse({ ...base, priceCents: 110001 }).success, false);
   assert.equal(dogSchema.safeParse({ ...base, status: "available" }).success, false);
 });
 
@@ -36,11 +39,16 @@ test("public inquiries validate email and require a meaningful message", () => {
   if (parsed.success) assert.equal(parsed.data.phone, null);
   assert.equal(inquirySchema.safeParse({ ...base, email: "not-an-email" }).success, false);
   assert.equal(inquirySchema.safeParse({ ...base, message: "hi" }).success, false);
+  const dogId = "2a846c34-f570-4eb6-9ec0-c0b4f6704a9e";
+  assert.equal(inquirySchema.safeParse({ ...base, dogIds: [dogId] }).success, true);
+  assert.equal(inquirySchema.safeParse({ ...base, dogIds: [dogId, dogId] }).success, false);
+  assert.equal(inquirySchema.safeParse({ ...base, dogIds: [dogId, dogId, dogId, dogId] }).success, false);
 });
 
 test("inquiry updates accept editable fields or status but reject empty updates", () => {
   assert.equal(inquiryUpdateSchema.safeParse({ customerName: "Updated name" }).success, true);
   assert.equal(inquiryUpdateSchema.safeParse({ status: "closed" }).success, true);
+  assert.equal(inquiryUpdateSchema.safeParse({ dogIds: ["2a846c34-f570-4eb6-9ec0-c0b4f6704a9e"] }).success, false);
   assert.equal(inquiryUpdateSchema.safeParse({}).success, false);
   assert.equal(inquiryUpdateSchema.safeParse({ status: "unknown" }).success, false);
 });

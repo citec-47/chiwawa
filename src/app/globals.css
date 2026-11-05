@@ -39,7 +39,7 @@ h1, h2, h3, p { margin-top: 0; }
 .hero-photo-small { position: absolute; width: 41%; height: 197px; left: 0; bottom: 1px; border: 7px solid var(--paper); border-radius: 6px; object-fit: cover; }
 .section { max-width: 1240px; margin: auto; padding: 100px 32px; }
 .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; margin-bottom: 34px; }
-.section h2 { font: 500 clamp(32px, 4vw, 47px)/1.14 var(--serif); letter-spacing: -1px; margin: 12px 0 0; }
+.section h2, .catalog-section h2 { font: 500 clamp(32px, 4vw, 47px)/1.14 var(--serif); letter-spacing: -1px; margin: 12px 0 0; }
 .section-subtitle { max-width: 395px; color: var(--muted); font-size: 13px; line-height: 1.8; margin-bottom: 5px; }
 .breed-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .breed-card { background: var(--white); border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
@@ -58,21 +58,33 @@ h1, h2, h3, p { margin-top: 0; }
 .catalog-inner { max-width: 1240px; margin: auto; padding: 84px 32px; }
 .empty-state { background: var(--white); border: 1px solid var(--line); border-radius: 7px; padding: 30px 24px; color: var(--muted); }
 .empty-state strong { display: block; color: var(--ink); font: 600 23px var(--serif); margin-bottom: 8px; }
-.dog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-.dog-card { background: white; border-radius: 7px; overflow: hidden; border: 1px solid var(--line); }
-.dog-card img { width: 100%; height: 245px; object-fit: cover; }
-.dog-card-body { padding: 20px; }
-.dog-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.price { font-size: 14px; font-weight: 700; color: var(--green); white-space: nowrap; }
+.dog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(265px, 1fr)); gap: 24px; }
+.dog-card { background: var(--white); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+.dog-card img { display: block; width: 100%; height: 280px; object-fit: cover; }
+.dog-card-body { flex: 1; display: flex; flex-direction: column; padding: 22px; }
+.dog-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.dog-card h3 { margin: 0; }
+.dog-card .dog-breed { color: var(--muted); font-size: 11px; margin: 0 0 6px; }
+.dog-card .price { font: 600 21px var(--serif); color: var(--green); white-space: nowrap; }
+.dog-card .dog-description { margin: 16px 0 22px; }
+.dog-card .button { width: 100%; margin-top: auto; }
+.button:disabled { background: #d7d2c8; color: #77766f; cursor: not-allowed; }
+.enquiry-cart { margin-top: 24px; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; gap: 18px; background: #e8eee8; border: 1px solid #d5e0d7; border-radius: 7px; }
+.enquiry-cart strong { font: 600 19px var(--serif); }
+.enquiry-cart p { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
 .inquiry-section { display: grid; grid-template-columns: .8fr 1.2fr; gap: 60px; align-items: start; }
 .inquiry-intro p { max-width: 400px; color: var(--muted); font-size: 14px; line-height: 1.8; margin-top: 15px; }
 .form-card { background: white; border: 1px solid var(--line); border-radius: 7px; padding: 27px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
-.field label { color: #526057; font-size: 11px; font-weight: 700; }
+.field label, .field-label { color: #526057; font-size: 11px; font-weight: 700; }
 .field input, .field textarea, .field select { width: 100%; border: 1px solid #e1ddd5; background: #fffefa; border-radius: 8px; padding: 12px 13px; color: var(--ink); outline: none; font-size: 13px; }
 .field input:focus, .field textarea:focus, .field select:focus { border-color: #789080; box-shadow: 0 0 0 3px #355a4918; }
 .field textarea { min-height: 120px; resize: vertical; }
+.selected-dogs { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.selected-dogs li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.selected-dogs strong { color: var(--ink); margin-left: 6px; }
+.remove-dog { border: 0; background: transparent; color: var(--green); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 11px; }
 .status-message { font-size: 12px; color: var(--green); margin: 13px 0 0; }
 .status-message.error { color: #9b413b; }
 .site-footer { background: #284638; color: #f8f5ee; padding: 47px 32px; }
@@ -126,6 +138,7 @@ h1, h2, h3, p { margin-top: 0; }
   .catalog-inner { padding: 68px 22px; }
   .dog-grid { grid-template-columns: repeat(2, 1fr); }
   .inquiry-section { grid-template-columns: 1fr; gap: 24px; }
+  .enquiry-cart { align-items: flex-start; flex-direction: column; }
   .admin-layout { grid-template-columns: 1fr; }
 }
 @media (max-width: 540px) {

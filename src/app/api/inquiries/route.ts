@@ -1,7 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { dogs, inquiries } from "@/lib/db/schema";
+import { breeds, dogs, inquiries } from "@/lib/db/schema";
 import { inquirySchema, validationMessage } from "@/lib/validation";
 
 const recentPosts = new Map<string, number[]>();
@@ -22,12 +22,37 @@ export async function POST(request: Request) {
     const parsed = inquirySchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: validationMessage(parsed.error) }, { status: 400 });
     const db = getDb();
-    if (parsed.data.dogId) {
-      const [dog] = await db.select({ id: dogs.id }).from(dogs)
-        .where(and(eq(dogs.id, parsed.data.dogId), eq(dogs.status, "published"))).limit(1);
-      if (!dog) return NextResponse.json({ error: "That listing is not available for inquiry." }, { status: 400 });
+    const selectedDogIds = parsed.data.dogIds?.length ? parsed.data.dogIds : (parsed.data.dogId ? [parsed.data.dogId] : []);
+    const selectedDogRows = selectedDogIds.length
+      ? await db.select({
+        id: dogs.id,
+        name: dogs.name,
+        breedName: breeds.name,
+        priceCents: dogs.priceCents
+      }).from(dogs).innerJoin(breeds, eq(dogs.breedId, breeds.id))
+        .where(and(inArray(dogs.id, selectedDogIds), eq(dogs.status, "published")))
+      : [];
+    const dogsById = new Map(selectedDogRows.map((dog) => [dog.id, dog]));
+    const selectedDogs = selectedDogIds.flatMap((id) => {
+      const dog = dogsById.get(id);
+      return dog ? [dog] : [];
+    });
+    if (selectedDogs.length !== selectedDogIds.length) {
+      return NextResponse.json({ error: "One of those listings is no longer available. Please refresh and try again." }, { status: 400 });
     }
-    const [created] = await db.insert(inquiries).values(parsed.data).returning({ id: inquiries.id });
+    const message = selectedDogs.length
+      ? `Asking about: ${selectedDogs.map((dog) => `${dog.name} (${dog.breedName}) — ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(dog.priceCents / 100)}`).join(", ")}\n\n${parsed.data.message}`
+      : parsed.data.message;
+    if (message.length > 3000) {
+      return NextResponse.json({ error: "Please shorten your message and try again." }, { status: 400 });
+    }
+    const [created] = await db.insert(inquiries).values({
+      customerName: parsed.data.customerName,
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+      message,
+      dogId: selectedDogs[0]?.id ?? null
+    }).returning({ id: inquiries.id });
     return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "We couldn't save your message just now. Please try again later." }, { status: 503 });
