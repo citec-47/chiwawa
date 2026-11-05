@@ -13,7 +13,7 @@ const galleryBreeds = [
 export default async function HomePage() {
   const catalog = await getPublicCatalog();
   return <>
-    {!catalog.connected && <div className="setup-notice">Preview site — current dog listings aren’t connected yet.</div>}
+    {!catalog.connected && <div className="setup-notice">For the latest availability, please contact us directly.</div>}
     <header className="site-header">
       <a className="brand" href="#" aria-label="Little Paws home">Little Paws</a>
       <nav className="nav-links" aria-label="Main navigation">
@@ -74,7 +74,7 @@ export default async function HomePage() {
       <section className="catalog-section" id="listings">
         <div className="catalog-inner">
           <div className="section-head"><div><h2>Available dogs</h2></div><p className="section-subtitle">Prices are in USD. Contact us to ask about a listing. This site doesn’t take payments or reservations.</p></div>
-          {catalog.dogs.length === 0 ? <div className="empty-state"><strong>{catalog.connected ? "No dogs are listed right now." : "Current listings aren’t connected in this preview."}</strong>{catalog.connected ? "Get in touch with questions about either breed." : "Browse the photos above to see both breeds."}</div> :
+          {catalog.dogs.length === 0 ? <div className="empty-state"><strong>{catalog.connected ? "No dogs are listed right now." : "Looking for current availability?"}</strong>{catalog.connected ? "Get in touch with questions about either breed." : "Please contact us directly. The photos above show the breeds, not dogs currently for sale."}</div> :
             <div className="dog-grid">{catalog.dogs.map((dog) => <article className="dog-card" key={dog.id}>
               <Image src={dog.imageUrl || "/images/chihuahua-listing.jpg"} alt={`${dog.breedName} listing`} width={640} height={470} />
               <div className="dog-card-body"><div className="dog-card-top"><div><h3>{dog.name}</h3><p>{dog.breedName}</p></div><span className="price">{money(dog.priceCents)}</span></div>
