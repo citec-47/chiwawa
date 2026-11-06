@@ -1,12 +1,14 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type Breed = { id: string; name: string; slug: string; description: string; imageUrl: string };
 type Dog = { id: string; name: string; breedId: string; breedName: string; description: string; priceCents: number; imageUrl: string; status: "draft" | "published" };
-type Inquiry = { id: string; customerName: string; email: string; phone: string | null; message: string; dogId: string | null; dogName: string | null; status: "new" | "in_progress" | "closed"; createdAt: string };
+type InquiryDog = { id: string; name: string; breedName: string; imageUrl: string };
+type Inquiry = { id: string; customerName: string; email: string; phone: string | null; message: string; dogId: string | null; dogName: string | null; dogs: InquiryDog[]; status: "new" | "in_progress" | "closed"; createdAt: string };
 type Tab = "dogs" | "breeds" | "inquiries";
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -237,16 +239,18 @@ function InquiryManager({ inquiries, dogs, refresh, onError, onNotice, onDelete 
     event.preventDefault();
     const element = event.currentTarget;
     const form = new FormData(element);
+    const dogId = form.get("dogId") || null;
+    const payload: Record<string, FormDataEntryValue | null> = {
+      customerName: form.get("customerName"),
+      email: form.get("email"),
+      phone: form.get("phone"),
+      message: form.get("message")
+    };
+    if (!editing || dogId !== editing.dogId) payload.dogId = dogId;
     try {
       await requestJson(editing ? `/api/admin/inquiries/${editing.id}` : "/api/admin/inquiries", {
         method: editing ? "PATCH" : "POST",
-        body: JSON.stringify({
-          customerName: form.get("customerName"),
-          email: form.get("email"),
-          phone: form.get("phone"),
-          message: form.get("message"),
-          dogId: form.get("dogId") || null
-        })
+        body: JSON.stringify(payload)
       });
       element.reset();
       onNotice(editing ? "Inquiry updated." : "Inquiry created.");
@@ -280,6 +284,10 @@ function InquiryManager({ inquiries, dogs, refresh, onError, onNotice, onDelete 
     <section className="admin-list">{inquiries.map((inquiry) => <article className="admin-row" key={inquiry.id}>
     <div style={{ maxWidth: 720 }}><strong>{inquiry.customerName} <span className={`status-badge ${inquiry.status}`}>{inquiry.status.replace("_", " ")}</span></strong>
       <small><a href={`mailto:${encodeURIComponent(inquiry.email)}`}>{inquiry.email}</a>{inquiry.phone ? ` · ${inquiry.phone}` : ""}{inquiry.dogName ? ` · About ${inquiry.dogName}` : ""}<br />{new Date(inquiry.createdAt).toLocaleString()}</small>
+      {inquiry.dogs.length > 0 && <div className="inquiry-dogs">{inquiry.dogs.map((dog) => <div className="inquiry-dog" key={dog.id}>
+        <Image src={dog.imageUrl || "/images/chihuahua-listing.jpg"} alt={`${dog.breedName} — ${dog.name}`} width={88} height={88} />
+        <span><strong>{dog.name}</strong><small>{dog.breedName}</small></span>
+      </div>)}</div>}
       <p style={{ fontSize: 13, lineHeight: 1.65, whiteSpace: "pre-wrap", margin: "12px 0 0" }}>{inquiry.message}</p>
     </div>
     <div className="row-actions"><button className="small-button" onClick={() => editInquiry(inquiry)}>Edit</button><select aria-label="Inquiry status" className="small-button" value={inquiry.status} onChange={(event) => void updateStatus(inquiry, event.target.value as Inquiry["status"])}><option value="new">New</option><option value="in_progress">In progress</option><option value="closed">Closed</option></select><button className="small-button danger" onClick={() => void onDelete(`/api/admin/inquiries/${inquiry.id}`, "inquiry")}>Delete</button></div>

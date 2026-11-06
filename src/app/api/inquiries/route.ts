@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { breeds, dogs, inquiries } from "@/lib/db/schema";
+import { breeds, dogs, inquiries, inquiryDogs } from "@/lib/db/schema";
 import { inquirySchema, validationMessage } from "@/lib/validation";
 
 const recentPosts = new Map<string, number[]>();
@@ -46,13 +46,22 @@ export async function POST(request: Request) {
     if (message.length > 3000) {
       return NextResponse.json({ error: "Please shorten your message and try again." }, { status: 400 });
     }
-    const [created] = await db.insert(inquiries).values({
-      customerName: parsed.data.customerName,
-      email: parsed.data.email,
-      phone: parsed.data.phone,
-      message,
-      dogId: selectedDogs[0]?.id ?? null
-    }).returning({ id: inquiries.id });
+    const created = await db.transaction(async (tx) => {
+      const [inquiry] = await tx.insert(inquiries).values({
+        customerName: parsed.data.customerName,
+        email: parsed.data.email,
+        phone: parsed.data.phone,
+        message,
+        dogId: selectedDogs[0]?.id ?? null
+      }).returning({ id: inquiries.id });
+      if (selectedDogs.length > 0) {
+        await tx.insert(inquiryDogs).values(selectedDogs.map((dog) => ({
+          inquiryId: inquiry.id,
+          dogId: dog.id
+        })));
+      }
+      return inquiry;
+    });
     return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "We couldn't save your message just now. Please try again later." }, { status: 503 });

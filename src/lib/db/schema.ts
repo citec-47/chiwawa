@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, integer, timestamp, index, char, unique } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, text, integer, timestamp, index, char, unique, primaryKey } from "drizzle-orm/pg-core";
 
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () => timestamp("updated_at", { withTimezone: true }).notNull().defaultNow();
@@ -40,6 +40,11 @@ export const inquiries = pgTable("inquiries", {
   createdAt: createdAt(),
   updatedAt: updatedAt()
 }, (table) => [index("inquiries_status_idx").on(table.status)]);
+
+export const inquiryDogs = pgTable("inquiry_dogs", {
+  inquiryId: uuid("inquiry_id").notNull().references(() => inquiries.id, { onDelete: "cascade" }),
+  dogId: uuid("dog_id").notNull().references(() => dogs.id, { onDelete: "cascade" })
+}, (table) => [primaryKey({ columns: [table.inquiryId, table.dogId] })]);
 
 export const adminUsers = pgTable("admin_users", {
   id: uuid("id").defaultRandom().primaryKey(),

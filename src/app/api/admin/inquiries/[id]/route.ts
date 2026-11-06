@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-api";
 import { getDb } from "@/lib/db";
-import { inquiries } from "@/lib/db/schema";
+import { inquiries, inquiryDogs } from "@/lib/db/schema";
 import { inquiryUpdateSchema } from "@/lib/validation";
 
 type Params = { params: Promise<{ id: string }> };
@@ -16,8 +16,17 @@ export async function PATCH(request: Request, { params }: Params) {
   try {
     const parsed = inquiryUpdateSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: "Choose a valid inquiry status." }, { status: 400 });
-    const [updated] = await getDb().update(inquiries).set({ ...parsed.data, updatedAt: new Date() })
-      .where(eq(inquiries.id, id)).returning();
+    const updated = await getDb().transaction(async (tx) => {
+      const [inquiry] = await tx.update(inquiries).set({ ...parsed.data, updatedAt: new Date() })
+        .where(eq(inquiries.id, id)).returning();
+      if (inquiry && Object.prototype.hasOwnProperty.call(parsed.data, "dogId")) {
+        await tx.delete(inquiryDogs).where(eq(inquiryDogs.inquiryId, id));
+        if (parsed.data.dogId) {
+          await tx.insert(inquiryDogs).values({ inquiryId: id, dogId: parsed.data.dogId });
+        }
+      }
+      return inquiry;
+    });
     return updated ? NextResponse.json(updated) : NextResponse.json({ error: "Inquiry not found." }, { status: 404 });
   } catch {
     return NextResponse.json({ error: "Could not update inquiry." }, { status: 400 });

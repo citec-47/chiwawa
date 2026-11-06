@@ -112,6 +112,11 @@ h1, h2, h3, p { margin-top: 0; }
 .admin-row { background: white; border: 1px solid var(--line); padding: 16px; border-radius: 11px; display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
 .admin-row strong { display: block; font-size: 13px; margin-bottom: 5px; }
 .admin-row small { display: block; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.inquiry-dogs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.inquiry-dog { display: flex; align-items: center; gap: 10px; min-width: 190px; padding: 7px; background: #f8f6f0; border: 1px solid var(--line); border-radius: 9px; }
+.inquiry-dog img { width: 62px; height: 62px; object-fit: cover; border-radius: 6px; }
+.inquiry-dog span { min-width: 0; }
+.inquiry-dog strong { margin-bottom: 3px; }
 .row-actions { display: flex; gap: 7px; flex-shrink: 0; }
 .small-button { border: 1px solid var(--line); padding: 7px 10px; border-radius: 7px; background: white; color: var(--ink); cursor: pointer; font-size: 10px; font-weight: 700; }
 .small-button:hover { border-color: var(--green); }
