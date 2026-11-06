@@ -5,8 +5,15 @@ import { getPublicCatalog } from "@/lib/catalog";
 export const dynamic = "force-dynamic";
 
 const galleryBreeds = [
-  { name: "Chihuahua", slug: "chihuahua", photoCount: 34 },
-  { name: "Pomeranian", slug: "pomeranian", photoCount: 20 }
+  { name: "Chihuahua", slug: "chihuahua", photoCount: 34, summary: "Tiny, alert, and full of personality." },
+  { name: "Pomeranian", slug: "pomeranian", photoCount: 20, summary: "Fluffy, bright-eyed, and naturally playful." }
+];
+
+const galleryDescriptions = [
+  "Bright-eyed and curious.",
+  "A happy little companion.",
+  "Ready for cuddles and playtime.",
+  "Soft, confident, and full of charm."
 ];
 
 export default async function HomePage() {
@@ -55,17 +62,23 @@ export default async function HomePage() {
         {galleryBreeds.map((breed) => <div className="gallery-breed" key={breed.slug}>
           <div className="gallery-breed-heading"><h3>{breed.name}</h3><span>{breed.photoCount} photos</span></div>
           <div className="gallery-grid">
-            {Array.from({ length: breed.photoCount }, (_, index) =>
-              <Image
-                className="gallery-photo"
-                key={`${breed.slug}-${index + 1}`}
-                src={`/images/gallery/${breed.slug}-${String(index + 1).padStart(2, "0")}.jpg`}
-                alt={`${breed.name}`}
-                width={640}
-                height={480}
-                sizes="(max-width: 540px) 50vw, (max-width: 800px) 33vw, 25vw"
-              />
-            )}
+            {Array.from({ length: breed.photoCount }, (_, index) => {
+              const description = index === 0 ? breed.summary : galleryDescriptions[index % galleryDescriptions.length];
+              return <article className="gallery-card" key={`${breed.slug}-${index + 1}`}>
+                <Image
+                  className="gallery-photo"
+                  src={`/images/gallery/${breed.slug}-${String(index + 1).padStart(2, "0")}.jpg`}
+                  alt={`${breed.name} photo ${index + 1}`}
+                  width={640}
+                  height={480}
+                  sizes="(max-width: 540px) 50vw, (max-width: 800px) 33vw, 25vw"
+                />
+                <div className="gallery-card-body">
+                  <h4>{breed.name}</h4>
+                  <p>{description}</p>
+                </div>
+              </article>;
+            })}
           </div>
         </div>)}
       </section>

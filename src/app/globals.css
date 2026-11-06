@@ -52,8 +52,12 @@ h1, h2, h3, p { margin-top: 0; }
 .gallery-breed-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 17px; }
 .gallery-breed-heading h3 { font: 600 26px var(--serif); margin: 0; }
 .gallery-breed-heading span { color: var(--muted); font-size: 12px; }
-.gallery-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.gallery-photo { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 3px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.gallery-card { background: var(--white); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.gallery-photo { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+.gallery-card-body { padding: 14px 14px 16px; }
+.gallery-card h4 { margin: 0 0 8px; font: 600 18px var(--serif); color: var(--ink); }
+.gallery-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .catalog-section { background: #f4efe6; }
 .catalog-inner { max-width: 1240px; margin: auto; padding: 84px 32px; }
 .empty-state { background: var(--white); border: 1px solid var(--line); border-radius: 7px; padding: 30px 24px; color: var(--muted); }
